@@ -1,0 +1,27 @@
+include icon
+
+mixin button_content(button)
+	- var text = button.text ? button.text : ""
+	- var html = button.html ? button.html : ""
+	- if(button.icon)
+		mixin icon(button.icon) 
+
+	- if(text)
+		span #{text}
+	- if(html)
+		!{html}
+
+mixin button(button)
+	- var className = button.className ? button.className : ""
+	- var id = button.id ? button.id : ""
+	- var type = button.tagName ? button.tagName : 'div'
+	- var args = button.attrs ? button.attrs : ''
+
+	case type
+		when 'button'
+			button(type=button.type, class="btn #{className}", id=id)
+				mixin button_content(button)
+		default 
+			#{type}(class="btn #{className}", id=id)
+				mixin button_content(button)
+		

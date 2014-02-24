@@ -1,0 +1,21 @@
+{
+  "name": "Steroids-Require-Boilerplate",
+  "version": "0.0.1",
+  "description": "Boilerplate project for Steroids + Require + Backbone + Parse.com.",
+  "repository": "N/A",
+  "readme": "N/A",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "devDependencies": {
+    "grunt-steroids": "0.x",
+    "grunt-contrib-compass": "~0.7.0",
+    "grunt-jade": "~0.4.0"
+  },
+  "license": "none",
+  "engines": {
+    "steroids": "3.1.9"
+  }
+}

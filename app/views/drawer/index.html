@@ -1,0 +1,32 @@
+<script>
+	document.addEventListener('deviceready', function(){
+
+		window.addEventListener("message", requireready, false);
+
+		function requireready(e){
+			var data = JSON.parse(e.data);
+			
+			if(data.message === 'requireready' && data.controller === 'drawer'){
+
+				require(['setup'], function(){
+					if(Parse.User.current()){
+
+						require([window.controllerPath], function(Drawer){
+
+							setTimeout(function(){
+								window.controller = new this.index();
+							}.bind(Drawer), 1);
+
+						});
+
+					}
+				});
+
+			}
+		};
+
+	}, false);
+
+</script>
+<script data-main="/javascripts/application" src="http://localhost/components/requirejs/require.js" controller="drawer" id="requirecontroller"></script>
+<div>div</div>

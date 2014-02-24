@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf8">
+  <meta name="viewport" content="width=device-width">
+  <title>Steroids Require Boilerplate</title>
+  
+  <link rel="stylesheet" href="/stylesheets/application.css" />
+
+  <script src="/javascripts/onerror.js"></script>
+  <script src="/javascripts/console.log.js"></script>
+
+  <!-- cordova.js is served from localhost to ensure the correct version -->
+  <script src="http://localhost/cordova.js"></script>
+  <!--script src='http://localhost/components/steroids-js/steroids.js'></script>
+  <script src='http://localhost/components/steroids-webview-preload-with-amd/preload.js'></script-->
+  
+</head>
+<body data-role="page">
+
+  <div class="page container" id="indexInitializer">Loading...</div>
+  
+</body>
+
+<script>
+
+  document.addEventListener('deviceready', function(){
+
+    window.addEventListener("message", requireready, false);
+
+    function requireready(e){
+      $('#indexInitializer').length ? $('#indexInitializer').remove() : false;
+      
+      var data = JSON.parse(e.data);
+
+      if(data.controller === 'index'){
+
+        //For this message to be broadcasted we MUST have loaded dependencies
+        if(data.message === 'login'){
+          window.location.reload();
+        }
+
+        if(data.message === 'signup'){
+          window.location += '#';
+          window.location.reload();
+        }
+
+        //Initialize after require and dependencies have been loaded
+        if(data.message === 'requireready'){
+
+          require(['setup'], function(){
+            if(Parse.User.current()){
+
+              require(['/controllers/search.js'], function(controller){
+                window.SearchController = controller;
+                window.controller = new SearchController.index();
+              });
+
+            }else{
+
+              steroids.preload(window.loginView, window.loginView.id, function(){
+                steroids.layers.push({
+                  view: window.loginView,
+                  navigationBar: false,
+                  animation: window.defaultAuthAnimation
+                });
+              });
+
+            }
+          });
+          
+        }
+      }
+    };
+  }, false);
+
+</script>
+<script data-main="/javascripts/application" src="http://localhost/components/requirejs/require.js" controller="index" id="requirecontroller"></script>
+</html>

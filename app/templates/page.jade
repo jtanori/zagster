@@ -1,0 +1,20 @@
+include button
+include icon
+include navbar
+
+include drawer_button
+
+unless nav
+	- var nav = false
+
+if(nav)
+	mixin navBar(nav)
+
+unless(id)
+	- var id = 'set your id'
+
+unless(className)
+	- var className = ''
+
+.page(id=id, class=className)
+	block content
