@@ -1,0 +1,27 @@
+//- 
+	Extends from page layout
+extends page
+
+//-
+	Include mixins and other blocks
+include button
+include navbar
+
+block pre
+	unless nav
+		- var nav = false
+
+	- if(nav)
+		mixin navBar(nav)
+
+block content
+	.container
+		.row
+			.col-xs-12
+				form(role='form', id='login-form')
+					.form-group
+						input.form-control(type='text', placeholder=i18n.Email)
+					.form-group
+						input.form-control(type='password', placeholder=i18n.Password)
+					.form-group
+						button.btn.btn-link.center-block(type='button') #{i18n['Forgot Password']}

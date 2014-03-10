@@ -1,0 +1,28 @@
+//- 
+	Extends from page layout
+extends page
+
+//-
+	Include mixins and other blocks
+include button
+include navbar
+
+block pre
+	unless nav
+		- var nav = false
+
+	- if(nav)
+		mixin navBar(nav)
+
+block content
+	.container
+		.row
+			.col-xs-12
+				form(role='form', id='signupForm')
+					.form-group.text-center
+						h3.uppercase #{i18n['Find your bikeshare']}
+					.form-group
+						label.text-center.text-muted(for='zip') #{i18n['Enter the name or zip code of the bikeshare you want to join']}
+						input.form-control(type='text', id='zip', name='zip')
+					.form-group.text-center
+						button.btn.btn-lg.btn-primary(type='submit') #{i18n.Search}

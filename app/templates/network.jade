@@ -1,0 +1,19 @@
+//- 
+	Extends from page layout
+extends page
+
+//-
+	Include mixins and other blocks
+include button
+include navbar
+
+block pre
+	unless nav
+		- var nav = false
+
+	- if(nav)
+		mixin navBar(nav)
+
+block content
+	.container
+		h4.bg-primary.uppercase #{i18n['Network']}

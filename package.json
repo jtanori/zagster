@@ -10,7 +10,9 @@
   },
   "author": "",
   "devDependencies": {
-    "grunt-steroids": "0.x"
+    "grunt-steroids": "0.x",
+    "grunt-contrib-compass": "~0.7.0",
+    "grunt-jade": "~0.4.0"
   },
   "license": "none",
   "engines": {

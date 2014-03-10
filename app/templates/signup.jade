@@ -1,0 +1,31 @@
+//- 
+	Extends from page layout
+extends page
+
+//-
+	Include mixins and other blocks
+include button
+include navbar
+
+block pre
+	unless nav
+		- var nav = false
+
+	- if(nav)
+		mixin navBar(nav)
+
+block content
+	.container
+		.row
+			.col-xs-12
+				form(role='form', id='signupForm')
+					.form-group
+						input.form-control(type='text', placeholder=i18n['First Name'], id='name')
+					.form-group
+						input.form-control(type='text', placeholder=i18n['Last Name'], id='lastName')
+					.form-group
+						input.form-control(type='email', placeholder=i18n.Email, id='email')
+					.form-group
+						input.form-control(type='phone', placeholder=i18n['Mobile #'], id='mobile')
+					.form-group
+						input.form-control(type='password', placeholder=i18n.Password, id='password')

@@ -1,0 +1,13 @@
+{
+  "name": "steroids-webview-preload-with-amd",
+  "homepage": "https://github.com/jtanori/steroids-webview-preload",
+  "_release": "22c328e5dd",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "22c328e5dd2db249820d5aec27712f15f9487fde"
+  },
+  "_source": "git://github.com/jtanori/steroids-webview-preload.git",
+  "_target": "*",
+  "_originalSource": "steroids-webview-preload-with-amd"
+}

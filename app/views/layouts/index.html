@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf8">
+  <title>Index</title>
+
+  <link rel="stylesheet" href="/stylesheets/application.css" />
+  
+  <script src="/javascripts/onerror.js"></script>
+  <script src="/javascripts/console.log.js"></script>
+
+  <script src="http://localhost/cordova.js"></script>
+  <script src='http://localhost/components/steroids-js/steroids.js'></script>
+  <script src='http://localhost/components/steroids-webview-preload-with-amd/preload.js'></script>
+
+  <script>
+    window.controllerPath = '/controllers/<%= yield.controller %>.js';
+  </script>
+</head>
+<body data-role="page" id="index-page">
+
+  <%= yield.view %>
+
+</body>
+</html>

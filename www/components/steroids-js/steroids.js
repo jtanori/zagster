@@ -1,4 +1,4 @@
-/*! steroids-js - v3.1.5 - 2014-02-10 17:37 */
+/*! steroids-js - v3.1.7 - 2014-03-05 15:00 */
 (function(window){
 var Bridge,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -643,6 +643,22 @@ Device = (function() {
 
   Device.prototype.torch = new Torch();
 
+  Device.prototype.platform = {
+    getName: function(options, callbacks) {
+      var name;
+      if (options == null) {
+        options = {};
+      }
+      if (callbacks == null) {
+        callbacks = {};
+      }
+      name = typeof AndroidAPIBridge !== 'undefined' ? "android" : navigator.userAgent.indexOf("Tizen") !== -1 ? "tizen" : navigator.userAgent.match(/(iPod|iPhone|iPad)/) ? "ios" : void 0;
+      if (callbacks.onSuccess != null) {
+        return callbacks.onSuccess(name);
+      }
+    }
+  };
+
   Device.prototype.ping = function(options, callbacks) {
     var data;
     if (options == null) {
@@ -796,6 +812,31 @@ App = (function() {
 
   App.prototype.absoluteUserFilesPath = void 0;
 
+  App.prototype.host = {
+    getURL: function(options, callbacks) {
+      var betterResponseCb;
+      if (options == null) {
+        options = {};
+      }
+      if (callbacks == null) {
+        callbacks = {};
+      }
+      betterResponseCb = function(hostObj) {
+        var aElem, actualURL;
+        actualURL = "http://" + hostObj.endpointURL;
+        aElem = document.createElement("a");
+        aElem.href = actualURL;
+        return callbacks.onSuccess(aElem.origin);
+      };
+      return steroids.nativeBridge.nativeCall({
+        method: "getEndpointURL",
+        parameters: {},
+        successCallbacks: [betterResponseCb],
+        failureCallbacks: [callbacks.onFailure]
+      });
+    }
+  };
+
   function App() {
     var _this = this;
     this.getPath({}, {
@@ -834,6 +875,20 @@ App = (function() {
     return window.AG_STEROIDS_SCANNER_URL;
   };
 
+  App.prototype.getMode = function(options, callbacks) {
+    var mode;
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    mode = navigator.userAgent.match(/(StandAlonePackage)/) ? "standalone" : "scanner";
+    if (callbacks.onSuccess != null) {
+      return callbacks.onSuccess(mode);
+    }
+  };
+
   return App;
 
 })();
@@ -867,9 +922,8 @@ Modal = (function() {
         } : {
           url: view.location
         };
-        if (options.keepLoading === true) {
-          parameters.keepTransitionHelper = true;
-        }
+        parameters.keepTransitionHelper = options.keepLoading;
+        parameters.disableAnimation = options.disableAnimation;
         return steroids.nativeBridge.nativeCall({
           method: "openModal",
           parameters: parameters,
@@ -1186,6 +1240,136 @@ LayerCollection = (function() {
   };
 
   return LayerCollection;
+
+})();
+;var Logger;
+
+Logger = (function() {
+  var LogMessage, LogMessageQueue;
+
+  LogMessage = (function() {
+    function LogMessage(message) {
+      this.message = message;
+      this.location = window.location.href;
+      this.screen_id = window.AG_SCREEN_ID;
+      this.layer_id = window.AG_LAYER_ID;
+      this.view_id = window.AG_VIEW_ID;
+      this.date = new Date();
+    }
+
+    LogMessage.prototype.asJSON = function() {
+      var err, messageJSON, obj;
+      try {
+        messageJSON = JSON.stringify(this.message);
+      } catch (_error) {
+        err = _error;
+        messageJSON = err.toString();
+      }
+      obj = {
+        message: messageJSON,
+        location: this.location,
+        date: this.date.toJSON(),
+        screen_id: this.screen_id,
+        layer_id: this.layer_id,
+        view_id: this.view_id
+      };
+      return obj;
+    };
+
+    return LogMessage;
+
+  })();
+
+  LogMessageQueue = (function() {
+    function LogMessageQueue() {
+      this.messageQueue = [];
+    }
+
+    LogMessageQueue.prototype.push = function(logMessage) {
+      return this.messageQueue.push(logMessage);
+    };
+
+    LogMessageQueue.prototype.flush = function() {
+      var logMessage, xhr;
+      if (steroids.logger.logEndpoint == null) {
+        return false;
+      }
+      while ((logMessage = this.messageQueue.pop())) {
+        xhr = new XMLHttpRequest();
+        xhr.open("POST", steroids.logger.logEndpoint, true);
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.send(JSON.stringify(logMessage.asJSON()));
+      }
+      return true;
+    };
+
+    LogMessageQueue.prototype.autoFlush = function(every) {
+      var _this = this;
+      return steroids.app.getMode({}, {
+        onSuccess: function(mode) {
+          if (mode !== "scanner") {
+            return;
+          }
+          return steroids.logger.queue.startFlushing(every);
+        }
+      });
+    };
+
+    LogMessageQueue.prototype.startFlushing = function(every) {
+      var _this = this;
+      if (this.flushingInterval != null) {
+        return false;
+      }
+      this.flushingInterval = window.setInterval(function() {
+        return _this.flush();
+      }, every);
+      return true;
+    };
+
+    LogMessageQueue.prototype.stopFlushing = function() {
+      if (this.flushingInterval == null) {
+        return false;
+      }
+      window.clearInterval(this.flushingInterval);
+      this.flushingInterval = void 0;
+      return true;
+    };
+
+    LogMessageQueue.prototype.getLength = function() {
+      return this.messageQueue.length;
+    };
+
+    return LogMessageQueue;
+
+  })();
+
+  function Logger() {
+    var _this = this;
+    this.messages = [];
+    this.queue = new LogMessageQueue;
+    steroids.app.host.getURL({}, {
+      onSuccess: function(url) {
+        return _this.logEndpoint = "" + url + "/__appgyver/logger";
+      }
+    });
+  }
+
+  Logger.prototype.log = function(message) {
+    var logMessage,
+      _this = this;
+    logMessage = new LogMessage(message);
+    this.messages.push(logMessage);
+    return steroids.app.getMode({}, {
+      onSuccess: function(mode) {
+        if (mode !== "scanner") {
+          return;
+        }
+        return _this.queue.push(logMessage);
+      }
+    });
+  };
+
+  return Logger;
 
 })();
 ;var NavigationBarButton;
@@ -1561,6 +1745,25 @@ TabBar = (function() {
     });
   };
 
+  TabBar.prototype.selectTab = function(options, callbacks) {
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    steroids.debug("steroids.tabBar.selectTab options: " + (JSON.stringify(options)) + " callbacks: " + (JSON.stringify(callbacks)));
+    this.index = options.constructor.name === "Number" ? options : options.index;
+    return steroids.nativeBridge.nativeCall({
+      method: "selectTab",
+      parameters: {
+        index: this.index
+      },
+      successCallbacks: [callbacks.onSuccess],
+      failureCallbacks: [callbacks.onFailure]
+    });
+  };
+
   TabBar.prototype.update = function(options, callbacks) {
     var parameters, scale, _i, _ref;
     if (options == null) {
@@ -1576,7 +1779,8 @@ TabBar = (function() {
       for (scale = _i = 0, _ref = options.tabs.length; 0 <= _ref ? _i < _ref : _i > _ref; scale = 0 <= _ref ? ++_i : --_i) {
         parameters.tabs.push({
           title: options.tabs[scale].title,
-          image_path: options.tabs[scale].icon
+          image_path: options.tabs[scale].icon,
+          badge: options.tabs[scale].badge
         });
       }
     }
@@ -1715,6 +1919,25 @@ WebView = (function() {
       }
     };
     return (_ref = callbacks.onSuccess) != null ? _ref.call() : void 0;
+  };
+
+  WebView.prototype.rotateTo = function(options, callbacks) {
+    var degrees;
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    degrees = options.constructor.name === "String" ? options : options.degrees;
+    return steroids.nativeBridge.nativeCall({
+      method: "rotateTo",
+      parameters: {
+        orientation: degrees
+      },
+      successCallbacks: [callbacks.onSuccess],
+      failureCallbacks: [callbacks.onFailure]
+    });
   };
 
   WebView.prototype.setBackgroundColor = function(options, callbacks) {
@@ -1913,7 +2136,7 @@ AuthorizationCodeFlow = (function(_super) {
       location: authorizationUrl
     });
     return steroids.modal.show({
-      layer: authenticationLayer
+      view: authenticationLayer
     });
   };
 
@@ -2581,6 +2804,7 @@ PostMessage = (function() {
         javascript: "steroids.PostMessage.dispatchMessageEvent('" + escapedJSONMessage + "', '*');"
       },
       successCallbacks: [],
+      failureCallbacks: [],
       recurringCallbacks: []
     });
   };
@@ -2597,7 +2821,7 @@ PostMessage = (function() {
 
 }).call(this);
 ;window.steroids = {
-  version: "3.1.5",
+  version: "3.1.7",
   Animation: Animation,
   File: File,
   views: {
@@ -2716,5 +2940,13 @@ window.steroids.splashscreen = new Splashscreen;
 window.steroids.PostMessage = PostMessage;
 
 window.postMessage = PostMessage.postMessage;
+
+window.steroids.logger = new Logger;
+
+window.steroids.logger.queue.autoFlush(100);
+
+window.addEventListener("error", function(error, url, lineNumber) {
+  return steroids.logger.log("" + error.message + " - " + url + ":" + lineNumber);
+});
 
 })(window);

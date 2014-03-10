@@ -1,0 +1,21 @@
+//- 
+	Extends from page layout
+extends page
+
+//-
+	Include mixins and other blocks
+include button
+
+block content
+	.container
+		.row
+			.col-xs-12
+				form(role='form', id='access-form')
+					#top.text-center
+						img.center-block(src='/images/logo.png')
+						h3.center-block.zagster Zagster
+
+					.form-group
+						button.btn.btn-lg.btn-primary.btn-block#login(type='button') #{i18n.Login}
+					.form-group
+						button.btn.btn-lg.btn-warning.btn-block#signup(type='button') #{i18n.Join}

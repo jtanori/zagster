@@ -1,0 +1,29 @@
+include button
+
+mixin navBar(buttons)
+	if(buttons)
+		nav.navbar.navbar-default.navbar-fixed-top(role='navigation')
+			.navbar-header
+				- var defaultButtonClass = 'btn btn-default navbar-btn'
+				- if(buttons.leftButton)
+
+					if(buttons.leftButton.className)
+						- buttons.leftButton.className = defaultButtonClass + ' left ' + buttons.leftButton.className
+					unless(buttons.leftButton.className)
+						- buttons.leftButton.className = defaultButtonClass + ' left '
+
+					mixin button(buttons.leftButton)
+
+				unless buttons.title
+					- buttons.title = ''
+
+				p.navbar-text.title#title #{buttons.title}
+
+				- if(buttons.rightButton)
+
+					if(buttons.rightButton.className)
+						- buttons.rightButton.className = defaultButtonClass + ' left ' + buttons.rightButton.className
+					unless(buttons.rightButton.className)
+						- buttons.rightButton.className = defaultButtonClass + ' right '
+
+					mixin button(buttons.rightButton)

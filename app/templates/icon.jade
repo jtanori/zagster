@@ -1,0 +1,10 @@
+mixin icon(icon)
+	- var className = icon.name ? icon.name : ""
+	- var color = icon.color ? "_" + icon.color : ""
+	- var text = icon.text ? icon.text : ""
+	- var html = icon.html ? icon.html : ""
+	i(class="icon-#{className}#{color}")
+		- if(text) 
+			span #{text}
+		- if(html)
+			!{html}

@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf8">
   <meta name="viewport" content="width=device-width">
-  <title>My Steroids App</title>
 
-  <link rel="stylesheet" href="/vendor/topcoat/css/topcoat-mobile-light.css" />
+  <title>Zagster</title>
+
   <link rel="stylesheet" href="/stylesheets/application.css" />
 
   <script src="/javascripts/onerror.js"></script>
@@ -14,32 +14,77 @@
   <!-- cordova.js is served from localhost to ensure the correct version -->
   <script src="http://localhost/cordova.js"></script>
   <script src="/components/steroids-js/steroids.js"></script>
-
-  <script src="/javascripts/application.js"></script>
 </head>
-<body>
-  <div class="content-padded">
+<body data-role="page">
 
-    <h1>Welcome to Steroids!</h1>
-
-    <p>Awesome! This file is located at <strong>www/index.html</strong> &mdash; open it, change some text, save the file, and press enter in the Terminal window running <strong>$ steroids connect</strong>. The changes are updated to all connected devices. Cool, ain't it?</p>
-
-    <h2>Using AppGyver Scanner</h2>
-
-    <p>On iOS, to restart your current app or scan another app, <strong>tap and hold on the screen with three fingers.</strong>. This opens the Scanner context menu.</p>
-
-    <p>On Android, press the native back button to return to the device desktop. Open the Scanner again to scan another app or re-open your previous app.</p>
-
-    <h2>Start the tutorial</h2>
-
-    <p>Let's spend a few minutes on a short tutorial. Go to your Steroids project directory and run the command:</p>
-
-    <p><strong>$ steroids generate tutorial begin</strong></p>
-
-    <h2>Get in touch with us!</h2>
-
-    <p>Feel free to contact us at <a href="mailto:contact@appgyver.com">contact@appgyver.com</a>, we would love to get your feedback!</p>
-
-  </div>
+  <div class="page container" id="indexInitializer">Loading...</div>
+  
 </body>
+
+<script>
+
+  document.addEventListener('deviceready', function(){
+
+    window.addEventListener("message", requireready, false);
+
+    function requireready(e){
+      $('#indexInitializer').length ? $('#indexInitializer').remove() : false;
+      
+      var data = JSON.parse(e.data);
+
+      if(data.controller === 'index'){
+
+        //For this message to be broadcasted we MUST have loaded dependencies
+        if(data.message === 'login'){
+          window.location.reload();
+        }
+
+        if(data.message === 'signup'){
+          window.location += '#';
+          window.location.reload();
+        }
+
+        //Initialize after require and dependencies have been loaded
+        if(data.message === 'requireready'){
+
+          require(['config', 'setup'], function(config){
+            /* Check for user, if it is a valid user then go to index */
+
+            /* If user is not valid take them to the access scree */
+            steroids.preload(window.accessView, window.accessView.id, function(){
+              steroids.layers.push({
+                view: window.accessView,
+                navigationBar: false,
+                animation: window.defaultAuthAnimation
+              });
+            });
+            /*
+            if(Parse.User.current()){
+
+              require(['/controllers/search.js'], function(controller){
+                window.SearchController = controller;
+                window.controller = new SearchController.index();
+              });
+
+            }else{
+
+              steroids.preload(window.loginView, window.loginView.id, function(){
+                steroids.layers.push({
+                  view: window.loginView,
+                  navigationBar: false,
+                  animation: window.defaultAuthAnimation
+                });
+              });
+
+            }
+            */
+          });
+          
+        }
+      }
+    };
+  }, false);
+
+</script>
+<script data-main="/javascripts/application" src="http://localhost/components/requirejs/require.js" controller="index" id="requirecontroller"></script>
 </html>

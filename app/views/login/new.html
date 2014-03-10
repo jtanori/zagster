@@ -1,0 +1,27 @@
+<script>
+
+  window.addEventListener("message", requireready, false);
+
+  function requireready(e){
+    var data = JSON.parse(e.data);
+    
+    if(data.message === 'requireready' && data.controller === 'signup'){
+
+      require(
+          ['setup'],
+          function(){
+            
+            require([window.controllerPath], function(controller){
+              window.Controller = controller;
+
+              var view = window.controller = new Controller.new();
+            });
+
+          }
+        );
+
+    }
+  };
+
+</script>
+<script data-main="/javascripts/application" src="http://localhost/components/requirejs/require.js" controller="signup" id="requirecontroller"></script>
